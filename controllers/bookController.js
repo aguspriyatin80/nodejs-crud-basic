@@ -25,6 +25,21 @@ exports.Read = async(req, res, next) => {
     }
 }
 
+exports.BookById = async (req, res, next) => {
+	try {
+	    const  {id}  = req.params;
+	    let book = await Book.findById({_id: id})
+	    res.status(200).json({
+            success: true,
+            msg: "Successfully retrieve product data",
+		    book
+	    });
+	} catch (err) {
+	  next(err);
+	}
+  };
+
+
 exports.Update = async(req, res, next) => {
     try {
         const { id } = req.params;
