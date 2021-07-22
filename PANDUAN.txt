@@ -298,3 +298,99 @@ exports.Delete = async(req, res, next) => {
 
 # tambahkan baris kode pada route book.js:
 router.delete("/:id", booksController.Delete;
+
+# tambahkan MULTER
+npm i multer cloudinary multer-storage-cloudinary
+
+# buat folder middlewares dan multer.js di dalamnya, kodenya sbb:
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+// cloud config
+cloudinary.config({
+    cloud_name: "du4xfo1tl",
+    api_key: "973732985841749",
+    api_secret: "Keo5JExCUdK9kY5UES55jYlfloU",
+});
+
+// storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: "books",
+    allowedFormats: ["jpg", "jpeg", "png", "svg"],
+    filename: (req, files, cb) => {
+        cb(null, Date.now() + "_" + files.originalname.split(".")[0]);
+    },
+});
+
+const uploader = multer({
+    storage: storage,
+});
+
+module.exports = uploader;
+
+# tambahkan kode berikut di model Book.js:
+    bookImage: {
+        type: String,
+        default: "https://res.cloudinary.com/du4xfo1tl/image/upload/v1606562656/samples/cloudinary-icon.png",
+    }
+
+# edit file route book.js:
+router.post("/", multer.single("bookImage"), bookControllers.Create);
+router.put("/edit/:id", multer.single("bookImage"), bookControllers.Update);
+
+# edit controller bookController.js:
+
+exports.Create = async(req, res, next) => {
+    try {
+        let obj = {};
+        const { title, author, publisher, publication_year, cost_price, sale_price, quantity } = req.body;
+        if (title) obj.title = title;
+        if (author) obj.author = author;
+        if (publisher) obj.publisher = publisher;
+        if (publication_year) obj.publication_year = publication_year;
+        if (cost_price) obj.cost_price = cost_price;
+        if (sale_price) obj.sale_price = sale_price;
+        if (quantity) obj.quantity = quantity;
+        if (req.file && req.file.fieldname && req.file.path)
+            obj.bookImage = req.file.path;
+
+        let data = await Book.create(obj);
+
+        res.status(201).json({
+            success: true,
+            message: "Successfully created data!",
+            data,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+
+exports.Update = async(req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) return next({ message: "Missing ID parameters" });
+        let obj = {};
+        const { title, author, publisher, publication_year, cost_price, sale_price, quantity } = req.body;
+        if (title) obj.title = title;
+        if (author) obj.author = author;
+        if (publisher) obj.publisher = publisher;
+        if (publication_year) obj.publication_year = publication_year;
+        if (cost_price) obj.cost_price = cost_price;
+        if (sale_price) obj.sale_price = sale_price;
+        if (quantity) obj.quantity = quantity;
+        if (req.file && req.file.fieldname && req.file.path)
+            obj.bookImage = req.file.path;
+        const updateData = await Book.findByIdAndUpdate(id, { $set: obj }, { new: true });
+        res.status(200).json({
+            success: true,
+            message: "Successfully updated data",
+            updateData
+        })
+    } catch (err) {
+        next(err);
+    }
+}

@@ -35,7 +35,11 @@ const bookSchema = new Schema({
     quantity: {
         type: Number,
         required: true,
-    }
+    },
+    bookImage: {
+        type: String,
+        default: "https://res.cloudinary.com/du4xfo1tl/image/upload/v1606562656/samples/cloudinary-icon.png",
+    },
 
 }, { timestamps: true, versionKey: false });
 
